@@ -1,0 +1,2209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Analytics - Advanced Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .time-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+            min-width: 150px;
+        }
+
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .form-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .data-table {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            padding: 5px 8px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .edit-btn {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .delete-btn {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--success);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .data-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .time-period-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--primary);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Notification -->
+        <div class="notification" id="notification">
+            <i class="fas fa-check-circle"></i> <span id="notification-text">Data saved successfully!</span>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>Restaurant Analytics Dashboard</h1>
+            <p>Track your sales, expenses, and profits with advanced filtering</p>
+            <div class="data-info">
+                <strong>Data Status:</strong> 
+                <span id="data-status">Loading...</span>
+                <span id="data-period" class="time-period-badge">All Time</span>
+            </div>
+        </div>
+
+        <!-- Time Period Controls -->
+        <div class="controls">
+            <div class="time-filter">
+                <label><strong>Time Period:</strong></label>
+                <select id="time-period" onchange="changeTimePeriod()">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year">This Year</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+                <div id="custom-range" style="display: none;">
+                    <input type="date" id="start-date">
+                    <span>to</span>
+                    <input type="date" id="end-date">
+                    <button class="btn btn-primary" onclick="applyCustomRange()">Apply</button>
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <button class="btn btn-warning" onclick="exportData()">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+                <button class="btn btn-danger" onclick="clearAllData()">
+                    <i class="fas fa-trash"></i> Clear All Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="showSection('dashboard')">Dashboard</div>
+            <div class="tab" onclick="showSection('orders')">Orders</div>
+            <div class="tab" onclick="showSection('products')">Products</div>
+            <div class="tab" onclick="showSection('expenses')">Expenses</div>
+            <div class="tab" onclick="showSection('reports')">Reports</div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <!-- Summary Cards with Time Period -->
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">TOTAL REVENUE <span id="revenue-period" class="time-period-badge">All Time</span></div>
+                        <div class="card-icon" style="background-color: var(--primary);">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="card-value" id="total-revenue">$0</div>
+                    <div class="card-subtitle" id="revenue-days">Based on 0 days of data</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">TOTAL ORDERS <span id="orders-period" class="time-period-badge">All Time</span></div>
+                        <div class="card-icon" style="background-color: var(--success);">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                    </div>
+                    <div class="card-value" id="total-orders">0</div>
+                    <div class="card-subtitle" id="orders-days">Based on 0 days of data</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">TOTAL EXPENSES <span id="expenses-period" class="time-period-badge">All Time</span></div>
+                        <div class="card-icon" style="background-color: var(--danger);">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                    <div class="card-value" id="total-expenses">$0</div>
+                    <div class="card-subtitle" id="expenses-days">Based on 0 days of data</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">NET PROFIT <span id="profit-period" class="time-period-badge">All Time</span></div>
+                        <div class="card-icon" style="background-color: var(--warning);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="card-value" id="net-profit">$0</div>
+                    <div class="card-subtitle" id="profit-days">Based on 0 days of data</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Revenue vs Expenses</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueExpensesChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Sales by Category</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Recent Orders</div>
+                    <button class="btn btn-primary" onclick="showSection('orders')">
+                        <i class="fas fa-plus"></i> Add New Order
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table id="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--gray);">
+                                    No orders recorded yet. Add your first order!
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div id="orders" class="section">
+            <div class="form-container">
+                <h2 class="form-title"><i class="fas fa-shopping-cart"></i> Add New Order</h2>
+                <form id="order-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="order-customer">Customer Name *</label>
+                            <input type="text" id="order-customer" required placeholder="Enter customer name">
+                        </div>
+                        <div class="form-group">
+                            <label for="order-date">Order Date *</label>
+                            <input type="datetime-local" id="order-date" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-select">Select Product *</label>
+                        <select id="product-select" onchange="updateProductDetails()" required>
+                            <option value="">Select a product</option>
+                            <!-- Products will be populated here -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="order-items">Items Ordered *</label>
+                            <textarea id="order-items" rows="3" placeholder="Selected product will appear here" required readonly></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="order-amount">Total Amount ($) *</label>
+                            <input type="number" id="order-amount" step="0.01" required placeholder="0.00" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="order-quantity">Quantity *</label>
+                            <input type="number" id="order-quantity" min="1" value="1" onchange="calculateOrderTotal()" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="order-status">Status</label>
+                            <select id="order-status">
+                                <option value="completed">Completed</option>
+                                <option value="pending">Pending</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger" onclick="clearForm('order-form')">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Order Filters -->
+            <div class="filter-section">
+                <h3>Filter Orders</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="filter-order-date">Date Range</label>
+                        <select id="filter-order-date" onchange="filterOrders()">
+                            <option value="all">All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-order-status">Status</label>
+                        <select id="filter-order-status" onchange="filterOrders()">
+                            <option value="all">All Status</option>
+                            <option value="completed">Completed</option>
+                            <option value="pending">Pending</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-order-customer">Customer</label>
+                        <input type="text" id="filter-order-customer" placeholder="Filter by customer" onkeyup="filterOrders()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">All Orders</div>
+                    <div>
+                        <button class="btn btn-danger" onclick="clearAllData('orders')">
+                            <i class="fas fa-trash"></i> Clear All Orders
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Amount</th>
+                                <th>Date & Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-orders-body">
+                            <!-- Orders will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div id="products" class="section">
+            <div class="form-container">
+                <h2 class="form-title"><i class="fas fa-utensils"></i> Add New Product</h2>
+                <form id="product-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-name">Product Name *</label>
+                            <input type="text" id="product-name" required placeholder="Enter product name">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-category">Category *</label>
+                            <select id="product-category" required>
+                                <option value="">Select Category</option>
+                                <option value="food">Food</option>
+                                <option value="beverage">Beverage</option>
+                                <option value="dessert">Dessert</option>
+                                <option value="appetizer">Appetizer</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-price">Price ($) *</label>
+                            <input type="number" id="product-price" step="0.01" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-cost">Cost ($) *</label>
+                            <input type="number" id="product-cost" step="0.01" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-description">Description</label>
+                        <textarea id="product-description" rows="3" placeholder="Product description (optional)"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger" onclick="clearForm('product-form')">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Product Filters -->
+            <div class="filter-section">
+                <h3>Filter Products</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="filter-product-category">Category</label>
+                        <select id="filter-product-category" onchange="filterProducts()">
+                            <option value="all">All Categories</option>
+                            <option value="food">Food</option>
+                            <option value="beverage">Beverage</option>
+                            <option value="dessert">Dessert</option>
+                            <option value="appetizer">Appetizer</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-product-name">Product Name</label>
+                        <input type="text" id="filter-product-name" placeholder="Filter by name" onkeyup="filterProducts()">
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-product-profit">Profit Margin</label>
+                        <select id="filter-product-profit" onchange="filterProducts()">
+                            <option value="all">All Margins</option>
+                            <option value="high">High (>40%)</option>
+                            <option value="medium">Medium (20-40%)</option>
+                            <option value="low">Low (<20%)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">All Products</div>
+                    <div>
+                        <button class="btn btn-danger" onclick="clearAllData('products')">
+                            <i class="fas fa-trash"></i> Clear All Products
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Cost</th>
+                                <th>Profit</th>
+                                <th>Margin</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-body">
+                            <!-- Products will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expenses Section -->
+        <div id="expenses" class="section">
+            <div class="form-container">
+                <h2 class="form-title"><i class="fas fa-money-bill-wave"></i> Add New Expense</h2>
+                <form id="expense-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expense-name">Expense Name *</label>
+                            <input type="text" id="expense-name" required placeholder="Enter expense name">
+                        </div>
+                        <div class="form-group">
+                            <label for="expense-category">Category *</label>
+                            <select id="expense-category" required>
+                                <option value="">Select Category</option>
+                                <option value="ingredients">Ingredients</option>
+                                <option value="staff">Staff</option>
+                                <option value="utilities">Utilities</option>
+                                <option value="rent">Rent</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expense-amount">Amount ($) *</label>
+                            <input type="number" id="expense-amount" step="0.01" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="expense-date">Date *</label>
+                            <input type="date" id="expense-date" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-frequency">Recurrence</label>
+                        <select id="expense-frequency">
+                            <option value="one-time">One Time</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-notes">Notes</label>
+                        <textarea id="expense-notes" rows="3" placeholder="Expense notes (optional)"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger" onclick="clearForm('expense-form')">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Expense
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Expense Filters -->
+            <div class="filter-section">
+                <h3>Filter Expenses</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="filter-expense-category">Category</label>
+                        <select id="filter-expense-category" onchange="filterExpenses()">
+                            <option value="all">All Categories</option>
+                            <option value="ingredients">Ingredients</option>
+                            <option value="staff">Staff</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="rent">Rent</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="equipment">Equipment</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-expense-date">Time Period</label>
+                        <select id="filter-expense-date" onchange="filterExpenses()">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-expense-frequency">Frequency</label>
+                        <select id="filter-expense-frequency" onchange="filterExpenses()">
+                            <option value="all">All Frequencies</option>
+                            <option value="one-time">One Time</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">All Expenses</div>
+                    <div>
+                        <button class="btn btn-danger" onclick="clearAllData('expenses')">
+                            <i class="fas fa-trash"></i> Clear All Expenses
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Expense Name</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Frequency</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenses-body">
+                            <!-- Expenses will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports" class="section">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">PROFIT/LOSS SUMMARY</div>
+                        <div class="card-icon" style="background-color: var(--primary);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="card-value" id="profit-loss">$0</div>
+                    <div class="card-subtitle" id="profit-period-text">All Time Period</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">DATA RECORDS</div>
+                        <div class="card-icon" style="background-color: var(--info);">
+                            <i class="fas fa-database"></i>
+                        </div>
+                    </div>
+                    <div class="card-value" id="data-counts">0</div>
+                    <div class="card-subtitle">
+                        Last updated: <span id="last-updated">Just now</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">AVERAGE DAILY REVENUE</div>
+                        <div class="card-icon" style="background-color: var(--success);">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                    </div>
+                    <div class="card-value" id="avg-daily-revenue">$0</div>
+                    <div class="card-subtitle" id="avg-revenue-period">Based on 0 days</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">BEST SELLING CATEGORY</div>
+                        <div class="card-icon" style="background-color: var(--warning);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <div class="card-value" id="best-category">N/A</div>
+                    <div class="card-subtitle" id="best-category-sales">$0 in sales</div>
+                </div>
+            </div>
+
+            <!-- Detailed Stats -->
+            <div class="filter-section">
+                <h3>Detailed Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-customers">0</div>
+                        <div class="stat-label">Total Customers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avg-order-value">$0</div>
+                        <div class="stat-label">Avg Order Value</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-products">0</div>
+                        <div class="stat-label">Products</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="profit-margin">0%</div>
+                        <div class="stat-label">Profit Margin</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Financial Summary</div>
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        <i class="fas fa-file-pdf"></i> Generate PDF Report
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Today</th>
+                                <th>This Week</th>
+                                <th>This Month</th>
+                                <th>This Year</th>
+                                <th>All Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="financial-summary">
+                            <tr>
+                                <td>Revenue</td>
+                                <td id="revenue-today">$0</td>
+                                <td id="revenue-week">$0</td>
+                                <td id="revenue-month">$0</td>
+                                <td id="revenue-year">$0</td>
+                                <td id="revenue-all">$0</td>
+                            </tr>
+                            <tr>
+                                <td>Expenses</td>
+                                <td id="expenses-today">$0</td>
+                                <td id="expenses-week">$0</td>
+                                <td id="expenses-month">$0</td>
+                                <td id="expenses-year">$0</td>
+                                <td id="expenses-all">$0</td>
+                            </tr>
+                            <tr>
+                                <td>Profit</td>
+                                <td id="profit-today">$0</td>
+                                <td id="profit-week">$0</td>
+                                <td id="profit-month">$0</td>
+                                <td id="profit-year">$0</td>
+                                <td id="profit-all">$0</td>
+                            </tr>
+                            <tr>
+                                <td>Orders</td>
+                                <td id="orders-today">0</td>
+                                <td id="orders-week">0</td>
+                                <td id="orders-month">0</td>
+                                <td id="orders-year">0</td>
+                                <td id="orders-all">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let restaurantData = {
+            orders: [],
+            products: [],
+            expenses: []
+        };
+
+        // Current time period filter
+        let currentTimePeriod = 'all';
+        let currentStartDate = null;
+        let currentEndDate = null;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("App initialized");
+            
+            // Load data from localStorage
+            loadData();
+            
+            // Set current date as default for forms
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const currentDateTime = now.toISOString().slice(0, 16);
+            
+            document.getElementById('order-date').value = currentDateTime;
+            document.getElementById('expense-date').value = today;
+            
+            // Set up form event listeners
+            document.getElementById('order-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addOrder();
+            });
+            
+            document.getElementById('product-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addProduct();
+            });
+            
+            document.getElementById('expense-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addExpense();
+            });
+            
+            // Populate product dropdown
+            updateProductDropdown();
+            
+            // Initial render
+            updateDashboard();
+            renderAllTables();
+            
+            console.log("Initial data loaded:", restaurantData);
+        });
+
+        // Load data from localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('restaurantData');
+            if (savedData) {
+                restaurantData = JSON.parse(savedData);
+                updateDataStatus('Data loaded successfully!');
+            } else {
+                updateDataStatus('No previous data found. Ready to record new data!');
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('restaurantData', JSON.stringify(restaurantData));
+            console.log("Data saved:", restaurantData);
+            updateDataStatus('Data saved successfully!');
+        }
+
+        // Update data status
+        function updateDataStatus(message) {
+            document.getElementById('data-status').textContent = message;
+            document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Show/hide sections
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Update data if needed
+            if (sectionName === 'reports') {
+                updateReports();
+            }
+            
+            // Update product dropdown if going to orders
+            if (sectionName === 'orders') {
+                updateProductDropdown();
+            }
+        }
+
+        // Change time period
+        function changeTimePeriod() {
+            const period = document.getElementById('time-period').value;
+            currentTimePeriod = period;
+            
+            // Show/hide custom range
+            const customRange = document.getElementById('custom-range');
+            if (period === 'custom') {
+                customRange.style.display = 'flex';
+                customRange.style.alignItems = 'center';
+                customRange.style.gap = '10px';
+            } else {
+                customRange.style.display = 'none';
+                currentStartDate = null;
+                currentEndDate = null;
+            }
+            
+            // Update dashboard with filtered data
+            updateDashboard();
+            updateDataPeriodBadge();
+        }
+
+        // Apply custom date range
+        function applyCustomRange() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('Start date cannot be after end date');
+                return;
+            }
+            
+            currentStartDate = startDate;
+            currentEndDate = endDate;
+            
+            updateDashboard();
+            updateDataPeriodBadge();
+            showNotification('Custom date range applied');
+        }
+
+        // Update data period badge
+        function updateDataPeriodBadge() {
+            let periodText = 'All Time';
+            
+            switch(currentTimePeriod) {
+                case 'today':
+                    periodText = 'Today';
+                    break;
+                case 'week':
+                    periodText = 'This Week';
+                    break;
+                case 'month':
+                    periodText = 'This Month';
+                    break;
+                case 'year':
+                    periodText = 'This Year';
+                    break;
+                case 'custom':
+                    periodText = 'Custom Range';
+                    break;
+            }
+            
+            document.getElementById('data-period').textContent = periodText;
+            
+            // Update all period badges
+            document.querySelectorAll('.time-period-badge').forEach(badge => {
+                if (badge.id !== 'data-period') {
+                    badge.textContent = periodText;
+                }
+            });
+        }
+
+        // Filter data by time period
+        function filterByTimePeriod(data, dateField = 'date') {
+            if (currentTimePeriod === 'all') return data;
+            
+            const now = new Date();
+            let startDate, endDate;
+            
+            switch(currentTimePeriod) {
+                case 'today':
+                    startDate = new Date(now);
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate = new Date(now);
+                    endDate.setHours(23, 59, 59, 999);
+                    break;
+                case 'week':
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - now.getDay());
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate = new Date(now);
+                    endDate.setDate(now.getDate() + (6 - now.getDay()));
+                    endDate.setHours(23, 59, 59, 999);
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    endDate.setHours(23, 59, 59, 999);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    endDate = new Date(now.getFullYear(), 11, 31);
+                    endDate.setHours(23, 59, 59, 999);
+                    break;
+                case 'custom':
+                    if (currentStartDate && currentEndDate) {
+                        startDate = new Date(currentStartDate);
+                        endDate = new Date(currentEndDate);
+                        endDate.setHours(23, 59, 59, 999);
+                    } else {
+                        return data;
+                    }
+                    break;
+            }
+            
+            return data.filter(item => {
+                const itemDate = new Date(item[dateField]);
+                return itemDate >= startDate && itemDate <= endDate;
+            });
+        }
+
+        // Calculate days covered by data
+        function calculateDaysCovered(data, dateField = 'date') {
+            if (data.length === 0) return 0;
+            
+            const dates = data.map(item => new Date(item[dateField]).toDateString());
+            const uniqueDates = [...new Set(dates)];
+            return uniqueDates.length;
+        }
+
+        // Update product dropdown
+        function updateProductDropdown() {
+            const dropdown = document.getElementById('product-select');
+            dropdown.innerHTML = '<option value="">Select a product</option>';
+            
+            restaurantData.products.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.textContent = `${product.name} (${product.category}) - $${product.price}`;
+                option.setAttribute('data-price', product.price);
+                option.setAttribute('data-category', product.category);
+                dropdown.appendChild(option);
+            });
+        }
+
+        // Update product details when product is selected
+        function updateProductDetails() {
+            const dropdown = document.getElementById('product-select');
+            const selectedOption = dropdown.options[dropdown.selectedIndex];
+            
+            if (selectedOption.value) {
+                const productName = selectedOption.textContent.split(' (')[0];
+                const price = selectedOption.getAttribute('data-price');
+                const category = selectedOption.getAttribute('data-category');
+                
+                document.getElementById('order-items').value = `${productName} (${category})`;
+                document.getElementById('order-amount').value = price;
+                
+                // Recalculate total based on quantity
+                calculateOrderTotal();
+            } else {
+                document.getElementById('order-items').value = '';
+                document.getElementById('order-amount').value = '';
+            }
+        }
+
+        // Calculate order total based on quantity
+        function calculateOrderTotal() {
+            const quantity = document.getElementById('order-quantity').value;
+            const price = document.getElementById('order-amount').value;
+            
+            if (quantity && price) {
+                document.getElementById('order-amount').value = (quantity * price).toFixed(2);
+            }
+        }
+
+        // ADD ORDER
+        function addOrder() {
+            const customer = document.getElementById('order-customer').value;
+            const date = document.getElementById('order-date').value;
+            const items = document.getElementById('order-items').value;
+            const amount = parseFloat(document.getElementById('order-amount').value);
+            const status = document.getElementById('order-status').value;
+            const productId = document.getElementById('product-select').value;
+            
+            if (!customer || !date || !items || !amount || !productId) {
+                alert('Please fill all required fields and select a product');
+                return;
+            }
+            
+            const order = {
+                id: 'ORD-' + Date.now(),
+                customer: customer,
+                date: date,
+                items: items,
+                amount: amount,
+                status: status,
+                productId: productId,
+                timestamp: new Date().toISOString()
+            };
+            
+            restaurantData.orders.push(order);
+            saveData();
+            
+            console.log("Order added:", order);
+            showNotification('Order recorded successfully!');
+            
+            updateDashboard();
+            renderAllTables();
+            clearForm('order-form');
+        }
+
+        // ADD PRODUCT
+        function addProduct() {
+            const name = document.getElementById('product-name').value;
+            const category = document.getElementById('product-category').value;
+            const price = parseFloat(document.getElementById('product-price').value);
+            const cost = parseFloat(document.getElementById('product-cost').value);
+            const description = document.getElementById('product-description').value;
+            
+            if (!name || !category || !price || !cost) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            const product = {
+                id: 'PROD-' + Date.now(),
+                name: name,
+                category: category,
+                price: price,
+                cost: cost,
+                description: description,
+                timestamp: new Date().toISOString()
+            };
+            
+            restaurantData.products.push(product);
+            saveData();
+            
+            console.log("Product added:", product);
+            showNotification('Product recorded successfully!');
+            
+            // Update product dropdown
+            updateProductDropdown();
+            renderAllTables();
+            clearForm('product-form');
+        }
+
+        // ADD EXPENSE
+        function addExpense() {
+            const name = document.getElementById('expense-name').value;
+            const category = document.getElementById('expense-category').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const date = document.getElementById('expense-date').value;
+            const frequency = document.getElementById('expense-frequency').value;
+            const notes = document.getElementById('expense-notes').value;
+            
+            if (!name || !category || !amount || !date) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            const expense = {
+                id: 'EXP-' + Date.now(),
+                name: name,
+                category: category,
+                amount: amount,
+                date: date,
+                frequency: frequency,
+                notes: notes,
+                timestamp: new Date().toISOString()
+            };
+            
+            restaurantData.expenses.push(expense);
+            saveData();
+            
+            console.log("Expense added:", expense);
+            showNotification('Expense recorded successfully!');
+            
+            updateDashboard();
+            renderAllTables();
+            clearForm('expense-form');
+        }
+
+        // Clear form
+        function clearForm(formId) {
+            document.getElementById(formId).reset();
+            
+            // Reset dates to today
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const currentDateTime = now.toISOString().slice(0, 16);
+            
+            if (document.getElementById('order-date')) {
+                document.getElementById('order-date').value = currentDateTime;
+            }
+            if (document.getElementById('expense-date')) {
+                document.getElementById('expense-date').value = today;
+            }
+            
+            // Reset product selection
+            if (formId === 'order-form') {
+                document.getElementById('product-select').selectedIndex = 0;
+                updateProductDetails();
+            }
+        }
+
+        // Clear all data
+        function clearAllData(type = 'all') {
+            if (confirm(`Are you sure you want to clear all ${type}? This cannot be undone.`)) {
+                if (type === 'all') {
+                    restaurantData = { orders: [], products: [], expenses: [] };
+                } else if (type === 'orders') {
+                    restaurantData.orders = [];
+                } else if (type === 'products') {
+                    restaurantData.products = [];
+                } else if (type === 'expenses') {
+                    restaurantData.expenses = [];
+                }
+                
+                saveData();
+                updateDashboard();
+                renderAllTables();
+                updateProductDropdown();
+                showNotification(`All ${type} cleared successfully!`);
+            }
+        }
+
+        // Update dashboard with time period filtering
+        function updateDashboard() {
+            // Filter data based on current time period
+            const filteredOrders = filterByTimePeriod(restaurantData.orders, 'date');
+            const filteredExpenses = filterByTimePeriod(restaurantData.expenses, 'date');
+            
+            // Calculate totals from filtered data
+            const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.amount, 0);
+            const totalOrders = filteredOrders.length;
+            const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const netProfit = totalRevenue - totalExpenses;
+            
+            // Calculate days covered
+            const revenueDays = calculateDaysCovered(filteredOrders, 'date');
+            const expenseDays = calculateDaysCovered(filteredExpenses, 'date');
+            const maxDays = Math.max(revenueDays, expenseDays);
+            
+            // Update dashboard cards
+            document.getElementById('total-revenue').textContent = '$' + totalRevenue.toFixed(2);
+            document.getElementById('total-orders').textContent = totalOrders;
+            document.getElementById('total-expenses').textContent = '$' + totalExpenses.toFixed(2);
+            document.getElementById('net-profit').textContent = '$' + netProfit.toFixed(2);
+            
+            // Update days information
+            document.getElementById('revenue-days').textContent = `Based on ${revenueDays} days of data`;
+            document.getElementById('orders-days').textContent = `Based on ${revenueDays} days of data`;
+            document.getElementById('expenses-days').textContent = `Based on ${expenseDays} days of data`;
+            document.getElementById('profit-days').textContent = `Based on ${maxDays} days of data`;
+            
+            renderRecentOrders();
+            updateDataCounts();
+            updateCharts();
+        }
+
+        // Update data counts
+        function updateDataCounts() {
+            const totalRecords = restaurantData.orders.length + restaurantData.products.length + restaurantData.expenses.length;
+            document.getElementById('data-counts').textContent = totalRecords;
+        }
+
+        // Render all tables
+        function renderAllTables() {
+            renderOrdersTable();
+            renderProductsTable();
+            renderExpensesTable();
+            renderRecentOrders();
+        }
+
+        // Render recent orders
+        function renderRecentOrders() {
+            const tbody = document.getElementById('orders-body');
+            tbody.innerHTML = '';
+            
+            // Get filtered orders
+            const filteredOrders = filterByTimePeriod(restaurantData.orders, 'date');
+            
+            if (filteredOrders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--gray);">
+                            No orders recorded for selected period
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Get last 5 orders
+            const recentOrders = [...filteredOrders].reverse().slice(0, 5);
+            
+            recentOrders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.customer}</td>
+                    <td>$${order.amount.toFixed(2)}</td>
+                    <td>${new Date(order.date).toLocaleString()}</td>
+                    <td>${order.status}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter orders
+        function filterOrders() {
+            renderOrdersTable();
+        }
+
+        // Render orders table with filtering
+        function renderOrdersTable() {
+            const tbody = document.getElementById('all-orders-body');
+            tbody.innerHTML = '';
+            
+            // Get filters
+            const dateFilter = document.getElementById('filter-order-date').value;
+            const statusFilter = document.getElementById('filter-order-status').value;
+            const customerFilter = document.getElementById('filter-order-customer').value.toLowerCase();
+            
+            // Filter orders
+            let filteredOrders = [...restaurantData.orders];
+            
+            // Apply time period filter
+            filteredOrders = filterByTimePeriod(filteredOrders, 'date');
+            
+            // Apply additional filters
+            if (dateFilter !== 'all') {
+                const now = new Date();
+                let startDate;
+                
+                switch(dateFilter) {
+                    case 'today':
+                        startDate = new Date(now);
+                        startDate.setHours(0, 0, 0, 0);
+                        break;
+                    case 'week':
+                        startDate = new Date(now);
+                        startDate.setDate(now.getDate() - 7);
+                        break;
+                    case 'month':
+                        startDate = new Date(now);
+                        startDate.setMonth(now.getMonth() - 1);
+                        break;
+                }
+                
+                if (dateFilter !== 'all') {
+                    filteredOrders = filteredOrders.filter(order => new Date(order.date) >= startDate);
+                }
+            }
+            
+            if (statusFilter !== 'all') {
+                filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+            }
+            
+            if (customerFilter) {
+                filteredOrders = filteredOrders.filter(order => 
+                    order.customer.toLowerCase().includes(customerFilter)
+                );
+            }
+            
+            if (filteredOrders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--gray);">
+                            No orders match the selected filters
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredOrders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.customer}</td>
+                    <td>${order.items}</td>
+                    <td>$${order.amount.toFixed(2)}</td>
+                    <td>${new Date(order.date).toLocaleString()}</td>
+                    <td>${order.status}</td>
+                    <td>
+                        <button class="action-btn delete-btn" onclick="deleteOrder('${order.id}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter products
+        function filterProducts() {
+            renderProductsTable();
+        }
+
+        // Render products table with filtering
+        function renderProductsTable() {
+            const tbody = document.getElementById('products-body');
+            tbody.innerHTML = '';
+            
+            // Get filters
+            const categoryFilter = document.getElementById('filter-product-category').value;
+            const nameFilter = document.getElementById('filter-product-name').value.toLowerCase();
+            const profitFilter = document.getElementById('filter-product-profit').value;
+            
+            // Filter products
+            let filteredProducts = [...restaurantData.products];
+            
+            if (categoryFilter !== 'all') {
+                filteredProducts = filteredProducts.filter(product => product.category === categoryFilter);
+            }
+            
+            if (nameFilter) {
+                filteredProducts = filteredProducts.filter(product => 
+                    product.name.toLowerCase().includes(nameFilter)
+                );
+            }
+            
+            if (profitFilter !== 'all') {
+                filteredProducts = filteredProducts.filter(product => {
+                    const profit = product.price - product.cost;
+                    const margin = (profit / product.price) * 100;
+                    
+                    switch(profitFilter) {
+                        case 'high':
+                            return margin > 40;
+                        case 'medium':
+                            return margin >= 20 && margin <= 40;
+                        case 'low':
+                            return margin < 20;
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            if (filteredProducts.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--gray);">
+                            No products match the selected filters
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredProducts.forEach(product => {
+                const profit = product.price - product.cost;
+                const profitMargin = (profit / product.price) * 100;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.category}</td>
+                    <td>$${product.price.toFixed(2)}</td>
+                    <td>$${product.cost.toFixed(2)}</td>
+                    <td>$${profit.toFixed(2)}</td>
+                    <td>${profitMargin.toFixed(1)}%</td>
+                    <td>
+                        <button class="action-btn delete-btn" onclick="deleteProduct('${product.id}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter expenses
+        function filterExpenses() {
+            renderExpensesTable();
+        }
+
+        // Render expenses table with filtering
+        function renderExpensesTable() {
+            const tbody = document.getElementById('expenses-body');
+            tbody.innerHTML = '';
+            
+            // Get filters
+            const categoryFilter = document.getElementById('filter-expense-category').value;
+            const dateFilter = document.getElementById('filter-expense-date').value;
+            const frequencyFilter = document.getElementById('filter-expense-frequency').value;
+            
+            // Filter expenses
+            let filteredExpenses = [...restaurantData.expenses];
+            
+            if (categoryFilter !== 'all') {
+                filteredExpenses = filteredExpenses.filter(expense => expense.category === categoryFilter);
+            }
+            
+            if (frequencyFilter !== 'all') {
+                filteredExpenses = filteredExpenses.filter(expense => expense.frequency === frequencyFilter);
+            }
+            
+            // Apply time period filter
+            if (dateFilter !== 'all') {
+                currentTimePeriod = dateFilter;
+                filteredExpenses = filterByTimePeriod(filteredExpenses, 'date');
+                // Reset to dashboard time period
+                currentTimePeriod = document.getElementById('time-period').value;
+            }
+            
+            if (filteredExpenses.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--gray);">
+                            No expenses match the selected filters
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredExpenses.forEach(expense => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${expense.name}</td>
+                    <td>${expense.category}</td>
+                    <td>$${expense.amount.toFixed(2)}</td>
+                    <td>${expense.date}</td>
+                    <td>${expense.frequency}</td>
+                    <td>
+                        <button class="action-btn delete-btn" onclick="deleteExpense('${expense.id}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Delete functions
+        function deleteOrder(id) {
+            if (confirm('Are you sure you want to delete this order?')) {
+                restaurantData.orders = restaurantData.orders.filter(order => order.id !== id);
+                saveData();
+                updateDashboard();
+                renderAllTables();
+                showNotification('Order deleted successfully!');
+            }
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                restaurantData.products = restaurantData.products.filter(product => product.id !== id);
+                saveData();
+                renderAllTables();
+                updateProductDropdown();
+                showNotification('Product deleted successfully!');
+            }
+        }
+
+        function deleteExpense(id) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                restaurantData.expenses = restaurantData.expenses.filter(expense => expense.id !== id);
+                saveData();
+                updateDashboard();
+                renderAllTables();
+                showNotification('Expense deleted successfully!');
+            }
+        }
+
+        // Update reports
+        function updateReports() {
+            // Calculate data for different time periods
+            const now = new Date();
+            
+            // Today
+            const todayStart = new Date(now);
+            todayStart.setHours(0, 0, 0, 0);
+            const todayEnd = new Date(now);
+            todayEnd.setHours(23, 59, 59, 999);
+            
+            const todayOrders = restaurantData.orders.filter(order => {
+                const orderDate = new Date(order.date);
+                return orderDate >= todayStart && orderDate <= todayEnd;
+            });
+            const todayExpenses = restaurantData.expenses.filter(expense => {
+                const expenseDate = new Date(expense.date);
+                return expenseDate >= todayStart && expenseDate <= todayEnd;
+            });
+            
+            // This week
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - now.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(now);
+            weekEnd.setDate(now.getDate() + (6 - now.getDay()));
+            weekEnd.setHours(23, 59, 59, 999);
+            
+            const weekOrders = restaurantData.orders.filter(order => {
+                const orderDate = new Date(order.date);
+                return orderDate >= weekStart && orderDate <= weekEnd;
+            });
+            const weekExpenses = restaurantData.expenses.filter(expense => {
+                const expenseDate = new Date(expense.date);
+                return expenseDate >= weekStart && expenseDate <= weekEnd;
+            });
+            
+            // This month
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            monthEnd.setHours(23, 59, 59, 999);
+            
+            const monthOrders = restaurantData.orders.filter(order => {
+                const orderDate = new Date(order.date);
+                return orderDate >= monthStart && orderDate <= monthEnd;
+            });
+            const monthExpenses = restaurantData.expenses.filter(expense => {
+                const expenseDate = new Date(expense.date);
+                return expenseDate >= monthStart && expenseDate <= monthEnd;
+            });
+            
+            // This year
+            const yearStart = new Date(now.getFullYear(), 0, 1);
+            const yearEnd = new Date(now.getFullYear(), 11, 31);
+            yearEnd.setHours(23, 59, 59, 999);
+            
+            const yearOrders = restaurantData.orders.filter(order => {
+                const orderDate = new Date(order.date);
+                return orderDate >= yearStart && orderDate <= yearEnd;
+            });
+            const yearExpenses = restaurantData.expenses.filter(expense => {
+                const expenseDate = new Date(expense.date);
+                return expenseDate >= yearStart && expenseDate <= yearEnd;
+            });
+            
+            // All time
+            const allOrders = restaurantData.orders;
+            const allExpenses = restaurantData.expenses;
+            
+            // Calculate values
+            const revenueToday = todayOrders.reduce((sum, order) => sum + order.amount, 0);
+            const revenueWeek = weekOrders.reduce((sum, order) => sum + order.amount, 0);
+            const revenueMonth = monthOrders.reduce((sum, order) => sum + order.amount, 0);
+            const revenueYear = yearOrders.reduce((sum, order) => sum + order.amount, 0);
+            const revenueAll = allOrders.reduce((sum, order) => sum + order.amount, 0);
+            
+            const expensesToday = todayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const expensesWeek = weekExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const expensesMonth = monthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const expensesYear = yearExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const expensesAll = allExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            
+            // Update financial summary table
+            document.getElementById('revenue-today').textContent = '$' + revenueToday.toFixed(2);
+            document.getElementById('revenue-week').textContent = '$' + revenueWeek.toFixed(2);
+            document.getElementById('revenue-month').textContent = '$' + revenueMonth.toFixed(2);
+            document.getElementById('revenue-year').textContent = '$' + revenueYear.toFixed(2);
+            document.getElementById('revenue-all').textContent = '$' + revenueAll.toFixed(2);
+            
+            document.getElementById('expenses-today').textContent = '$' + expensesToday.toFixed(2);
+            document.getElementById('expenses-week').textContent = '$' + expensesWeek.toFixed(2);
+            document.getElementById('expenses-month').textContent = '$' + expensesMonth.toFixed(2);
+            document.getElementById('expenses-year').textContent = '$' + expensesYear.toFixed(2);
+            document.getElementById('expenses-all').textContent = '$' + expensesAll.toFixed(2);
+            
+            document.getElementById('profit-today').textContent = '$' + (revenueToday - expensesToday).toFixed(2);
+            document.getElementById('profit-week').textContent = '$' + (revenueWeek - expensesWeek).toFixed(2);
+            document.getElementById('profit-month').textContent = '$' + (revenueMonth - expensesMonth).toFixed(2);
+            document.getElementById('profit-year').textContent = '$' + (revenueYear - expensesYear).toFixed(2);
+            document.getElementById('profit-all').textContent = '$' + (revenueAll - expensesAll).toFixed(2);
+            
+            document.getElementById('orders-today').textContent = todayOrders.length;
+            document.getElementById('orders-week').textContent = weekOrders.length;
+            document.getElementById('orders-month').textContent = monthOrders.length;
+            document.getElementById('orders-year').textContent = yearOrders.length;
+            document.getElementById('orders-all').textContent = allOrders.length;
+            
+            // Update detailed stats
+            const totalCustomers = [...new Set(restaurantData.orders.map(order => order.customer))].length;
+            const avgOrderValue = allOrders.length > 0 ? revenueAll / allOrders.length : 0;
+            const profitMargin = revenueAll > 0 ? ((revenueAll - expensesAll) / revenueAll) * 100 : 0;
+            
+            document.getElementById('total-customers').textContent = totalCustomers;
+            document.getElementById('avg-order-value').textContent = '$' + avgOrderValue.toFixed(2);
+            document.getElementById('total-products').textContent = restaurantData.products.length;
+            document.getElementById('profit-margin').textContent = profitMargin.toFixed(1) + '%';
+            
+            // Calculate average daily revenue
+            const orderDays = calculateDaysCovered(allOrders, 'date');
+            const avgDailyRevenue = orderDays > 0 ? revenueAll / orderDays : 0;
+            
+            document.getElementById('avg-daily-revenue').textContent = '$' + avgDailyRevenue.toFixed(2);
+            document.getElementById('avg-revenue-period').textContent = `Based on ${orderDays} days`;
+            
+            // Find best selling category
+            const categorySales = {};
+            allOrders.forEach(order => {
+                const product = restaurantData.products.find(p => p.id === order.productId);
+                if (product) {
+                    if (!categorySales[product.category]) {
+                        categorySales[product.category] = 0;
+                    }
+                    categorySales[product.category] += order.amount;
+                }
+            });
+            
+            let bestCategory = 'N/A';
+            let bestCategorySales = 0;
+            
+            for (const [category, sales] of Object.entries(categorySales)) {
+                if (sales > bestCategorySales) {
+                    bestCategory = category;
+                    bestCategorySales = sales;
+                }
+            }
+            
+            document.getElementById('best-category').textContent = bestCategory;
+            document.getElementById('best-category-sales').textContent = '$' + bestCategorySales.toFixed(2) + ' in sales';
+            
+            // Update profit/loss card
+            const filteredOrders = filterByTimePeriod(restaurantData.orders, 'date');
+            const filteredExpenses = filterByTimePeriod(restaurantData.expenses, 'date');
+            const profit = filteredOrders.reduce((sum, order) => sum + order.amount, 0) - 
+                          filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            
+            document.getElementById('profit-loss').textContent = '$' + profit.toFixed(2);
+            document.getElementById('profit-period-text').textContent = getTimePeriodText() + ' Period';
+        }
+
+        // Get time period text
+        function getTimePeriodText() {
+            switch(currentTimePeriod) {
+                case 'today': return 'Today';
+                case 'week': return 'This Week';
+                case 'month': return 'This Month';
+                case 'year': return 'This Year';
+                case 'custom': return 'Custom';
+                default: return 'All Time';
+            }
+        }
+
+        // Update charts
+        function updateCharts() {
+            // Filter data for charts based on current time period
+            const filteredOrders = filterByTimePeriod(restaurantData.orders, 'date');
+            const filteredExpenses = filterByTimePeriod(restaurantData.expenses, 'date');
+            
+            // Revenue vs Expenses Chart
+            const revenueExpensesCtx = document.getElementById('revenueExpensesChart').getContext('2d');
+            
+            // Group data by date for the chart
+            const dateGroups = {};
+            
+            filteredOrders.forEach(order => {
+                const date = order.date.split('T')[0];
+                if (!dateGroups[date]) {
+                    dateGroups[date] = { revenue: 0, expenses: 0 };
+                }
+                dateGroups[date].revenue += order.amount;
+            });
+            
+            filteredExpenses.forEach(expense => {
+                const date = expense.date;
+                if (!dateGroups[date]) {
+                    dateGroups[date] = { revenue: 0, expenses: 0 };
+                }
+                dateGroups[date].expenses += expense.amount;
+            });
+            
+            const dates = Object.keys(dateGroups).sort();
+            const revenueData = dates.map(date => dateGroups[date].revenue);
+            const expensesData = dates.map(date => dateGroups[date].expenses);
+            
+            if (window.revenueExpensesChart) {
+                window.revenueExpensesChart.destroy();
+            }
+            
+            if (dates.length > 0) {
+                window.revenueExpensesChart = new Chart(revenueExpensesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dates,
+                        datasets: [
+                            {
+                                label: 'Revenue',
+                                data: revenueData,
+                                backgroundColor: 'rgba(67, 97, 238, 0.7)',
+                                borderColor: '#4361ee',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Expenses',
+                                data: expensesData,
+                                backgroundColor: 'rgba(247, 37, 133, 0.7)',
+                                borderColor: '#f72585',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            
+            const categorySales = {};
+            filteredOrders.forEach(order => {
+                const product = restaurantData.products.find(p => p.id === order.productId);
+                if (product) {
+                    if (!categorySales[product.category]) {
+                        categorySales[product.category] = 0;
+                    }
+                    categorySales[product.category] += order.amount;
+                }
+            });
+            
+            const categories = Object.keys(categorySales);
+            const salesData = Object.values(categorySales);
+            
+            if (window.categoryChart) {
+                window.categoryChart.destroy();
+            }
+            
+            if (categories.length > 0) {
+                window.categoryChart = new Chart(categoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            data: salesData,
+                            backgroundColor: [
+                                '#4361ee',
+                                '#4cc9f0',
+                                '#f8961e',
+                                '#7209b7',
+                                '#4895ef',
+                                '#f72585'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Export data
+        function exportData() {
+            const dataStr = JSON.stringify(restaurantData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'restaurant-data-export.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Data exported successfully!');
+        }
+
+        // Generate report
+        function generateReport() {
+            showNotification('PDF report generation would be implemented in a full app version.');
+        }
+    </script>
+</body>
+</html>
